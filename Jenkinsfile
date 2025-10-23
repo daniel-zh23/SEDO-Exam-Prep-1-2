@@ -1,40 +1,55 @@
 pipeline {
     agent any
+
+    options {
+        disableConcurrentBuilds()
+        timestamps()
+    }
+
     stages {
         stage('Validate Branch') {
             when {
-                expression {
-                    env.BRANCH_NAME == 'main' || env.BRANCH_NAME.startsWith('feature/')
-                }
+                expression { env.BRANCH_NAME == 'main' || env.BRANCH_NAME?.startsWith('feature/') }
+            }
+            steps {
+                echo "Branch ${env.BRANCH_NAME} is allowed. Proceeding with build."
             }
         }
-    stages {
+
         stage('Setup .NET 6') {
+            when {
+                expression { env.BRANCH_NAME == 'main' || env.BRANCH_NAME?.startsWith('feature/') }
+            }
             steps {
                 sh 'dotnet --version'
             }
         }
 
         stage('Restore') {
+            when {
+                expression { env.BRANCH_NAME == 'main' || env.BRANCH_NAME?.startsWith('feature/') }
+            }
             steps {
-                echo "Restoring NuGet packages"
                 sh 'dotnet restore'
             }
         }
 
         stage('Build') {
+            when {
+                expression { env.BRANCH_NAME == 'main' || env.BRANCH_NAME?.startsWith('feature/') }
+            }
             steps {
-                echo "Building the project"
                 sh 'dotnet build --configuration Release --no-restore'
             }
         }
 
         stage('Test') {
+            when {
+                expression { env.BRANCH_NAME == 'main' || env.BRANCH_NAME?.startsWith('feature/') }
+            }
             steps {
-                echo "Running tests"
                 sh 'dotnet test --no-build --verbosity normal'
             }
-        }
         }
     }
 }
