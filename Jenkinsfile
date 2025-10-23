@@ -1,20 +1,11 @@
 pipeline {
     agent any
 
-    options {
-        disableConcurrentBuilds()
-        timestamps()
-    }
-
-    environment {
-        DOTNET_CLI_TELEMETRY_OPTOUT = '1'
-    }
-
     stages {
         stage('Build and Test') {
             when {
                 expression {
-                    return env.BRANCH_NAME == 'main' || env.BRANCH_NAME?.startsWith('feature/')
+                    return env.GIT_BRANCH == 'main' || env.GIT_BRANCH.startsWith('feature/')
                 }
             }
             steps {
@@ -42,7 +33,7 @@ pipeline {
             when {
                 not {
                     expression {
-                        return env.BRANCH_NAME == 'main' || env.BRANCH_NAME?.startsWith('feature/')
+                        return env.GIT_BRANCH == 'main' || env.GIT_BRANCH.startsWith('feature/')
                     }
                 }
             }
@@ -52,12 +43,4 @@ pipeline {
         }
     }
 
-    post {
-        success {
-            echo "✅ Pipeline finished successfully for ${env.BRANCH_NAME}"
-        }
-        failure {
-            echo "❌ Pipeline failed for ${env.BRANCH_NAME}"
-        }
-    }
 }
