@@ -1,12 +1,14 @@
 pipeline {
     agent any
 
+    environment {
+        RUN_FOR_BRANCH = "${env.BRANCH_NAME == 'main' || env.BRANCH_NAME?.startsWith('feature/')}"
+    }
+
     stages {
         stage('Dotnet Version') {
             when {
-                expression {
-                    return env.BRANCH_NAME == 'main' || env.BRANCH_NAME?.startsWith('feature/')
-                }
+                expression { return env.RUN_FOR_BRANCH.toBoolean() }
             }
             steps {
                 script {
@@ -16,9 +18,7 @@ pipeline {
         }
         stage('Build Project') {
             when {
-                expression {
-                    return env.BRANCH_NAME == 'main' || env.BRANCH_NAME?.startsWith('feature/')
-                }
+                expression { return env.RUN_FOR_BRANCH.toBoolean() }
             }
             steps {
                 script {
@@ -28,9 +28,7 @@ pipeline {
         }
         stage('Test project') {
             when {
-                expression {
-                    return env.BRANCH_NAME == 'main' || env.BRANCH_NAME?.startsWith('feature/')
-                }
+                expression { return env.RUN_FOR_BRANCH.toBoolean() }
             }
             steps {
                 script {
