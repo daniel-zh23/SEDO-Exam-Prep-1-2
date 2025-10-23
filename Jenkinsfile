@@ -6,50 +6,58 @@ pipeline {
         timestamps()
     }
 
+    environment {
+        DOTNET_CLI_TELEMETRY_OPTOUT = '1'
+    }
+
     stages {
-        stage('Validate Branch') {
+        stage('Build and Test') {
             when {
-                expression { env.BRANCH_NAME == 'main' || env.BRANCH_NAME?.startsWith('feature/') }
+                expression {
+                    return env.BRANCH_NAME == 'main' || env.BRANCH_NAME?.startsWith('feature/')
+                }
             }
             steps {
-                echo "Branch ${env.BRANCH_NAME} is allowed. Proceeding with build."
+                script {
+                    echo "✅ Branch ${env.BRANCH_NAME} allowed for build."
+
+                    sh '''
+                        echo "Using .NET version:"
+                        dotnet --version
+
+                        echo "Restoring..."
+                        dotnet restore
+
+                        echo "Building..."
+                        dotnet build --configuration Release --no-restore
+
+                        echo "Running tests..."
+                        dotnet test --no-build --verbosity normal
+                    '''
+                }
             }
         }
 
-        stage('Setup .NET 6') {
+        stage('Skipped Branch Info') {
             when {
-                expression { env.BRANCH_NAME == 'main' || env.BRANCH_NAME?.startsWith('feature/') }
+                not {
+                    expression {
+                        return env.BRANCH_NAME == 'main' || env.BRANCH_NAME?.startsWith('feature/')
+                    }
+                }
             }
             steps {
-                sh 'dotnet --version'
+                echo "⏩ Branch '${env.BRANCH_NAME}' is not allowed (only main or feature/* are built)."
             }
         }
+    }
 
-        stage('Restore') {
-            when {
-                expression { env.BRANCH_NAME == 'main' || env.BRANCH_NAME?.startsWith('feature/') }
-            }
-            steps {
-                sh 'dotnet restore'
-            }
+    post {
+        success {
+            echo "✅ Pipeline finished successfully for ${env.BRANCH_NAME}"
         }
-
-        stage('Build') {
-            when {
-                expression { env.BRANCH_NAME == 'main' || env.BRANCH_NAME?.startsWith('feature/') }
-            }
-            steps {
-                sh 'dotnet build --configuration Release --no-restore'
-            }
-        }
-
-        stage('Test') {
-            when {
-                expression { env.BRANCH_NAME == 'main' || env.BRANCH_NAME?.startsWith('feature/') }
-            }
-            steps {
-                sh 'dotnet test --no-build --verbosity normal'
-            }
+        failure {
+            echo "❌ Pipeline failed for ${env.BRANCH_NAME}"
         }
     }
 }
