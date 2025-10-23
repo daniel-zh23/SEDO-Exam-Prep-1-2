@@ -22,7 +22,7 @@ pipeline {
             }
             steps {
                 script {
-                    bat 'dotnet --version'
+                    bat 'dotnet build'
                 }
             }
         }
