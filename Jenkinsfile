@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     stages {
-        stage('Build and Test') {
+        stage('Dotnet Version') {
             when {
                 expression {
                     return env.BRANCH_NAME == 'main' || env.BRANCH_NAME?.startsWith('feature/')
@@ -10,37 +10,35 @@ pipeline {
             }
             steps {
                 script {
-                    echo "✅ Branch ${env.BRANCH_NAME} allowed for build."
-
-                    bat '''
-                        echo "Using .NET version:"
-                        dotnet --version
-
-                        echo "Restoring..."
-                        dotnet restore
-
-                        echo "Building..."
-                        dotnet build --configuration Release --no-restore
-
-                        echo "Running tests..."
-                        dotnet test --no-build --verbosity normal
-                    '''
+                    bat 'dotnet --version'
                 }
             }
         }
-
-        stage('Skipped Branch Info') {
+        stage('Build Project') {
             when {
-                not {
-                    expression {
-                        return env.BRANCH_NAME == 'main' || env.BRANCH_NAME?.startsWith('feature/')
-                    }
+                expression {
+                    return env.BRANCH_NAME == 'main' || env.BRANCH_NAME?.startsWith('feature/')
                 }
             }
             steps {
-                echo "⏩ Branch '${env.BRANCH_NAME}' is not allowed (only main or feature/* are built)."
+                script {
+                    bat 'dotnet --version'
+                }
             }
         }
+        stage('Test project') {
+            when {
+                expression {
+                    return env.BRANCH_NAME == 'main' || env.BRANCH_NAME?.startsWith('feature/')
+                }
+            }
+            steps {
+                script {
+                    bat 'dotnet test --no-build --verbosity normal'
+                }
+            }
+        }
+
     }
 
 }
