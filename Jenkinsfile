@@ -1,13 +1,5 @@
 pipeline {
     agent any
-
-    // Only run for main and feature branches
-    when {
-        expression { 
-            return env.BRANCH_NAME == 'main' || env.BRANCH_NAME.startsWith('feature/')
-        }
-    }
-
     stages {
         stage('Validate Branch') {
             when {
@@ -15,8 +7,9 @@ pipeline {
                     env.BRANCH_NAME == 'main' || env.BRANCH_NAME.startsWith('feature/')
                 }
             }
+        }
         stages {
-            stage('Setup .NET 6') {
+        stage('Setup .NET 6') {
             steps {
                 sh 'dotnet --version'
             }
