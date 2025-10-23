@@ -9,7 +9,14 @@ pipeline {
     }
 
     stages {
-        stage('Setup .NET 6') {
+        stage('Validate Branch') {
+            when {
+                expression {
+                    env.BRANCH_NAME == 'main' || env.BRANCH_NAME.startsWith('feature/')
+                }
+            }
+        stages {
+            stage('Setup .NET 6') {
             steps {
                 sh 'dotnet --version'
             }
@@ -34,6 +41,7 @@ pipeline {
                 echo "Running tests"
                 sh 'dotnet test --no-build --verbosity normal'
             }
+        }
         }
     }
 }
