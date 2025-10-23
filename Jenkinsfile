@@ -5,14 +5,14 @@ pipeline {
         stage('Build and Test') {
             when {
                 expression {
-                    return env.GIT_BRANCH == 'main' || env.GIT_BRANCH.startsWith('feature/')
+                    return env.BRANCH_NAME == 'main' || env.BRANCH_NAME?.startsWith('feature/')
                 }
             }
             steps {
                 script {
                     echo "✅ Branch ${env.BRANCH_NAME} allowed for build."
 
-                    sh '''
+                    bat '''
                         echo "Using .NET version:"
                         dotnet --version
 
@@ -33,7 +33,7 @@ pipeline {
             when {
                 not {
                     expression {
-                        return env.GIT_BRANCH == 'main' || env.GIT_BRANCH.startsWith('feature/')
+                        return env.BRANCH_NAME == 'main' || env.BRANCH_NAME?.startsWith('feature/')
                     }
                 }
             }
