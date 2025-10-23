@@ -1,39 +1,44 @@
 pipeline {
     agent any
 
-    // Only run for main and feature branches
-    when {
-        expression { 
-            return env.BRANCH_NAME == 'main' || env.BRANCH_NAME.startsWith('feature/')
-        }
-    }
-
     stages {
-        stage('Setup .NET 6') {
+        stage('Dotnet Version') {
+            when {
+                expression {
+                    return env.BRANCH_NAME == 'main' || env.BRANCH_NAME?.startsWith('feature/')
+                }
+            }
             steps {
-                sh 'dotnet --version'
+                script {
+                    bat 'dotnet --version'
+                }
+            }
+        }
+        stage('Build Project') {
+            when {
+                expression {
+                    return env.BRANCH_NAME == 'main' || env.BRANCH_NAME?.startsWith('feature/')
+                }
+            }
+            steps {
+                script {
+                    bat 'dotnet build'
+                }
+            }
+        }
+        stage('Test project') {
+            when {
+                expression {
+                    return env.BRANCH_NAME == 'main' || env.BRANCH_NAME?.startsWith('feature/')
+                }
+            }
+            steps {
+                script {
+                    bat 'dotnet test --no-build --verbosity normal'
+                }
             }
         }
 
-        stage('Restore') {
-            steps {
-                echo "Restoring NuGet packages"
-                sh 'dotnet restore'
-            }
-        }
-
-        stage('Build') {
-            steps {
-                echo "Building the project"
-                sh 'dotnet build --configuration Release --no-restore'
-            }
-        }
-
-        stage('Test') {
-            steps {
-                echo "Running tests"
-                sh 'dotnet test --no-build --verbosity normal'
-            }
-        }
     }
+
 }
