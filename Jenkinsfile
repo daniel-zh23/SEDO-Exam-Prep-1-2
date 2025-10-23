@@ -8,7 +8,7 @@ pipeline {
                 }
             }
         }
-        stages {
+    stages {
         stage('Setup .NET 6') {
             steps {
                 sh 'dotnet --version'
